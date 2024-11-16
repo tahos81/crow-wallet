@@ -149,9 +149,6 @@ export function Home() {
             />
           </div>
         </div>
-        <PrimaryButton className="flex w-full items-center justify-center mt-4">
-          Deposit
-        </PrimaryButton>
 
         <SettlerOpen account={account} />
       </div>
