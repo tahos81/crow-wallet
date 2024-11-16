@@ -15,7 +15,15 @@ import { parseSignature, sign } from "webauthn-p256";
 import { PrimaryButton } from "./Button";
 import axios from "axios";
 
-export function SettlerOpen({ account }: { account: Account.Account }) {
+export function SettlerOpen({
+  account,
+  amount,
+  setAmount,
+}: {
+  account: Account.Account;
+  amount: string;
+  setAmount: (amount: string) => void;
+}) {
   const {
     data: hash,
     mutate: execute,
@@ -41,7 +49,7 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
 
     const orderData = {
       token: TOKEN_ADDRESS as `0x${string}`,
-      amount: parseUnits("1", 6), // Converts 1 ether to wei
+      amount: parseUnits(amount, 6),
       dstChainId: mekongChainId,
       xCalls: [], // Empty array for xCalls
     };
@@ -74,8 +82,6 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
     });
 
     const { r, s } = parseSignature(signature);
-
-    console.log({ r, s });
 
     const finalSignature = formatHex(
       parseHex(r.toString()) + parseHex(s.toString())
@@ -136,6 +142,8 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
           },
         ],
       });
+
+      setAmount("");
 
       console.log(
         order,
@@ -202,13 +210,13 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
       </PrimaryButton>
       {error && <p>{(error as BaseError).shortMessage ?? error.message}</p>}
       {isSuccess && (
-        <p>
+        <p className="ml-auto text-center mr-auto mt-4">
           <a
             href={`${client.chain.blockExplorers.default.url}/tx/${hash}`}
             target="_blank"
             rel="noreferrer"
           >
-            Explorer
+            See on Explorer
           </a>
         </p>
       )}
