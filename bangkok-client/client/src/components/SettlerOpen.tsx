@@ -2,6 +2,7 @@ import {
   type BaseError,
   encodeAbiParameters,
   encodeFunctionData,
+  keccak256,
   parseUnits,
 } from "viem";
 
@@ -9,6 +10,7 @@ import { useWaitForTransactionReceipt } from "wagmi";
 import { client } from "../config";
 import { DEFAULT_ERC20, SETTLER } from "../contracts";
 import { Account } from "../modules/Account";
+import { parseSignature, sign } from "webauthn-p256";
 
 export function SettlerOpen({ account }: { account: Account.Account }) {
   const {
@@ -26,7 +28,7 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
     receiptQuery.fetchStatus === "fetching" || executeQuery.isPending;
   const isSuccess = receiptQuery.isSuccess && executeQuery.isSuccess;
 
-  const handleSettlerOpen = () => {
+  const handleSettlerOpen = async () => {
     const CROW_ORDER_DATA_TYPE_HASH =
       "0x14a1ec3370924385dde81afb955e8b7b4622456fd879688f69853490fdbfb263"; // Replace with your actual type hash
     const TOKEN_ADDRESS = "0xc6Ab1437507B4156b4DbFbe061b369f0973Be8F4"; // Your token address
@@ -37,6 +39,43 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
       dstChainId: 911867n,
       xCalls: [], // Empty array for xCalls
     };
+
+    const mekongChainId = BigInt(7078815900);
+
+    const orderDataHash = keccak256(
+      encodeAbiParameters(
+        [
+          {
+            components: [
+              { name: "token", type: "address" },
+              { name: "amount", type: "uint256" },
+              { name: "dstChainId", type: "uint256" },
+              {
+                name: "xCalls",
+                type: "tuple[]",
+                components: [], // Add XCall components if needed
+              },
+            ],
+            type: "tuple",
+          },
+          { type: "uint256" },
+        ],
+        [orderData, mekongChainId]
+      )
+    );
+
+    const { signature } = await sign({
+      hash: orderDataHash,
+      credentialId: account.key.id,
+    });
+
+    const { r, s } = parseSignature(signature);
+
+    console.log({ r, s });
+
+    const finalSignature = formatHex(
+      parseHex(r.toString()) + parseHex(s.toString())
+    );
 
     const encodedOrderData = encodeAbiParameters(
       [
@@ -55,7 +94,7 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
         },
         { type: "bytes" },
       ],
-      [orderData, "0x"] // Second parameter is empty bytes
+      [orderData, finalSignature] // Second parameter is empty bytes
     );
 
     // Calculate fill deadline (current timestamp + 1 day in seconds)
@@ -92,11 +131,18 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
         },
       ],
     });
+
+    console.log(
+      order,
+      JSON.stringify({
+        signature: finalSignature,
+        hash,
+      })
+    );
   };
 
   return (
     <div>
-      <p>Mint some EXP (ERC20) to your account by clicking the button below.</p>
       <button
         disabled={isPending || isSuccess}
         onClick={handleSettlerOpen}
@@ -119,3 +165,14 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
     </div>
   );
 }
+
+const parseHex = (hex: string) => {
+  if (hex.startsWith("0x")) {
+    return hex.slice(2);
+  }
+  return hex;
+};
+
+const formatHex = (hex: string) => {
+  return `0x${hex}` as `0x${string}`;
+};
