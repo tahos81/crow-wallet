@@ -22,7 +22,7 @@ export function SecondaryButton({ children, className, ...rest }: Props) {
   return (
     <button
       className={mergeClasses(
-        "text-white border-[#4F05E5] border-2 bg-transparent h-[48px] rounded-md text-[14px]",
+        "text-white border-[#4F05E5] border-2 bg-transparent h-[48px] rounded-md text-[14px] items-center align-center justify-center",
         className
       )}
       {...rest}
