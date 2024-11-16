@@ -5,16 +5,13 @@ export class baseOrderDto {
   signature: string;
 }
 
-export class newOnchainOrderDto extends baseOrderDto {
-  transactionHash: string;
-}
-
-export class newGaslessOrderDto extends newOnchainOrderDto {
+export class newGaslessOrderDto extends baseOrderDto {
   originSettler: string;
   user: string;
   nonce: number;
   originChainId: number;
   openDeadline: number;
+  transactionHash: string;
 }
 
 export class OutputDto {
@@ -39,4 +36,8 @@ export class ResolvedCrossChainOrderDTO {
   maxSpent: Array<OutputDto>;
   minReceived: Array<OutputDto>;
   fillInstructions: Array<FillInstructionDto>;
+}
+
+export class newOnchainOrderDto extends ResolvedCrossChainOrderDTO {
+  transactionHash: string;
 }
