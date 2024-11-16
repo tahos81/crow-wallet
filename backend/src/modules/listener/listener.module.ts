@@ -5,6 +5,7 @@ import { ListenerService } from './listener.service';
 import { PublisherService } from 'src/modules/publisher/publisher.service';
 import { JwtModule } from '@nestjs/jwt';
 import { CONFIG } from 'src/config';
+import { ListenerController } from 'src/modules/listener/listener.controller';
 
 @Module({
   imports: [
@@ -18,5 +19,6 @@ import { CONFIG } from 'src/config';
     }),
   ],
   providers: [ListenerService, PublisherService],
+  controllers: [ListenerController],
 })
 export class ListenerModule {}

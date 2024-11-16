@@ -22,7 +22,7 @@ export class OutputDto {
   token: string;
   amount: bigint;
   recipient: string;
-  chainId: number;
+  chainId: bigint;
 }
 
 export class FillInstructionDto {

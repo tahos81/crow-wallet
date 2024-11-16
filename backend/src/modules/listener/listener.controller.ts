@@ -1,10 +1,15 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Get } from '@nestjs/common';
 import { ListenerService } from './listener.service';
 import { newGaslessOrderDto, newOnchainOrderDto } from './dto/listener.dto';
 
 @Controller()
-export class PublisherController {
+export class ListenerController {
   constructor(private listenerService: ListenerService) {}
+
+  @Get('test')
+  async test(): Promise<void> {
+    return await this.listenerService.test();
+  }
 
   @Post('new_onchain_order')
   async newOnchainOrder(
