@@ -1,146 +1,99 @@
 export const ABIS = {
   ACCOUNT: [
     {
-      inputs: [
-        {
-          internalType: 'tuple',
-          name: 'order',
-          type: 'tuple',
-          components: [
-            { internalType: 'address', name: 'originSettler', type: 'address' },
-            { internalType: 'address', name: 'user', type: 'address' },
-            { internalType: 'uint256', name: 'nonce', type: 'uint256' },
-            { internalType: 'uint256', name: 'originChainId', type: 'uint256' },
-            { internalType: 'uint32', name: 'openDeadline', type: 'uint32' },
-            { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
-            { internalType: 'bytes32', name: 'orderDataType', type: 'bytes32' },
-            { internalType: 'bytes', name: 'orderData', type: 'bytes' },
-          ],
-        },
-        { internalType: 'bytes', name: 'originFillerData', type: 'bytes' },
-      ],
-      name: 'resolveFor',
-      outputs: [
-        {
-          internalType: 'tuple',
-          components: [
-            { internalType: 'address', name: 'user', type: 'address' },
-            { internalType: 'uint256', name: 'originChainId', type: 'uint256' },
-            { internalType: 'uint32', name: 'openDeadline', type: 'uint32' },
-            { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
-            { internalType: 'bytes32', name: 'orderId', type: 'bytes32' },
-            {
-              internalType: 'tuple[]',
-              name: 'maxSpent',
-              components: [
-                { internalType: 'bytes32', name: 'token', type: 'bytes32' },
-                { internalType: 'uint256', name: 'amount', type: 'uint256' },
-                { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
-                { internalType: 'uint256', name: 'chainId', type: 'uint256' },
-              ],
-            },
-            {
-              internalType: 'tuple[]',
-              name: 'minReceived',
-              components: [
-                { internalType: 'bytes32', name: 'token', type: 'bytes32' },
-                { internalType: 'uint256', name: 'amount', type: 'uint256' },
-                { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
-                { internalType: 'uint256', name: 'chainId', type: 'uint256' },
-              ],
-            },
-            {
-              internalType: 'tuple[]',
-              name: 'fillInstructions',
-              components: [
-                {
-                  internalType: 'uint64',
-                  name: 'destinationChainId',
-                  type: 'uint64',
-                },
-                {
-                  internalType: 'bytes32',
-                  name: 'destinationSettler',
-                  type: 'bytes32',
-                },
-                { internalType: 'bytes', name: 'originData', type: 'bytes' },
-              ],
-            },
-          ],
-          name: '',
-          type: 'tuple',
-        },
-      ],
-      stateMutability: 'view',
-      type: 'function',
+      type: 'fallback',
+      stateMutability: 'payable',
     },
     {
+      type: 'receive',
+      stateMutability: 'payable',
+    },
+    {
+      type: 'function',
+      name: 'authorize',
       inputs: [
         {
-          internalType: 'tuple',
-          name: 'order',
-          type: 'tuple',
-          components: [
-            { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
-            { internalType: 'bytes32', name: 'orderDataType', type: 'bytes32' },
-            { internalType: 'bytes', name: 'orderData', type: 'bytes' },
-          ],
+          name: 'publicKeyX',
+          type: 'uint256',
+          internalType: 'uint256',
+        },
+        {
+          name: 'publicKeyY',
+          type: 'uint256',
+          internalType: 'uint256',
         },
       ],
-      name: 'resolve',
+      outputs: [],
+      stateMutability: 'nonpayable',
+    },
+    {
+      type: 'function',
+      name: 'fill',
+      inputs: [
+        {
+          name: 'orderId',
+          type: 'bytes32',
+          internalType: 'bytes32',
+        },
+        {
+          name: 'originData',
+          type: 'bytes',
+          internalType: 'bytes',
+        },
+        {
+          name: '',
+          type: 'bytes',
+          internalType: 'bytes',
+        },
+      ],
+      outputs: [],
+      stateMutability: 'nonpayable',
+    },
+    {
+      type: 'function',
+      name: 'nonce',
+      inputs: [],
       outputs: [
         {
-          internalType: 'tuple',
-          components: [
-            { internalType: 'address', name: 'user', type: 'address' },
-            { internalType: 'uint256', name: 'originChainId', type: 'uint256' },
-            { internalType: 'uint32', name: 'openDeadline', type: 'uint32' },
-            { internalType: 'uint32', name: 'fillDeadline', type: 'uint32' },
-            { internalType: 'bytes32', name: 'orderId', type: 'bytes32' },
-            {
-              internalType: 'tuple[]',
-              name: 'maxSpent',
-              components: [
-                { internalType: 'bytes32', name: 'token', type: 'bytes32' },
-                { internalType: 'uint256', name: 'amount', type: 'uint256' },
-                { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
-                { internalType: 'uint256', name: 'chainId', type: 'uint256' },
-              ],
-            },
-            {
-              internalType: 'tuple[]',
-              name: 'minReceived',
-              components: [
-                { internalType: 'bytes32', name: 'token', type: 'bytes32' },
-                { internalType: 'uint256', name: 'amount', type: 'uint256' },
-                { internalType: 'bytes32', name: 'recipient', type: 'bytes32' },
-                { internalType: 'uint256', name: 'chainId', type: 'uint256' },
-              ],
-            },
-            {
-              internalType: 'tuple[]',
-              name: 'fillInstructions',
-              components: [
-                {
-                  internalType: 'uint64',
-                  name: 'destinationChainId',
-                  type: 'uint64',
-                },
-                {
-                  internalType: 'bytes32',
-                  name: 'destinationSettler',
-                  type: 'bytes32',
-                },
-                { internalType: 'bytes', name: 'originData', type: 'bytes' },
-              ],
-            },
-          ],
           name: '',
-          type: 'tuple',
+          type: 'uint256',
+          internalType: 'uint256',
         },
       ],
       stateMutability: 'view',
+    },
+    {
       type: 'function',
+      name: 'transact',
+      inputs: [
+        {
+          name: 'to',
+          type: 'address',
+          internalType: 'address',
+        },
+        {
+          name: 'data',
+          type: 'bytes',
+          internalType: 'bytes',
+        },
+        {
+          name: 'value',
+          type: 'uint256',
+          internalType: 'uint256',
+        },
+        {
+          name: 'r',
+          type: 'bytes32',
+          internalType: 'bytes32',
+        },
+        {
+          name: 's',
+          type: 'bytes32',
+          internalType: 'bytes32',
+        },
+      ],
+      outputs: [],
+      stateMutability: 'nonpayable',
     },
   ],
   ERC20: [

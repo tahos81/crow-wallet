@@ -3,13 +3,13 @@ import { CONFIG } from 'src/config';
 import { ADDRESSES, ABIS } from 'src/constants';
 
 export const CHAIN_ID = {
-  MEKONG: 137,
-  ALPHANET: 11155111,
+  MEKONG: 7078815900,
+  ODYSSEY: 911867,
 };
 
 export const RPC_URLS = {
-  [CHAIN_ID.MEKONG]: CONFIG.NETWORK_RPC_URL_A,
-  [CHAIN_ID.ALPHANET]: CONFIG.NETWORK_RPC_URL_B,
+  [CHAIN_ID.ODYSSEY]: CONFIG.NETWORK_RPC_URL_A,
+  [CHAIN_ID.MEKONG]: CONFIG.NETWORK_RPC_URL_B,
 };
 
 export class JsonRpcProvider extends ethers.JsonRpcProvider {}

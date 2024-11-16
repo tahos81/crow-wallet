@@ -2,7 +2,7 @@ export class baseOrderDto {
   fillDeadline: number;
   orderDataType: string;
   orderData: string;
-  signature?: string;
+  signature: string;
 }
 
 export class newOnchainOrderDto extends baseOrderDto {
@@ -15,7 +15,6 @@ export class newGaslessOrderDto extends newOnchainOrderDto {
   nonce: number;
   originChainId: number;
   openDeadline: number;
-  signature: string;
 }
 
 export class OutputDto {
