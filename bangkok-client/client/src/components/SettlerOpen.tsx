@@ -13,7 +13,13 @@ import { Account } from "../modules/Account";
 import { parseSignature, sign } from "webauthn-p256";
 import { PrimaryButton } from "./Button";
 
-export function SettlerOpen({ account }: { account: Account.Account }) {
+export function SettlerOpen({
+  account,
+  amount,
+}: {
+  account: Account.Account;
+  amount: string;
+}) {
   const {
     data: hash,
     mutate: execute,
@@ -38,7 +44,7 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
 
     const orderData = {
       token: TOKEN_ADDRESS as `0x${string}`,
-      amount: parseUnits("1", 6), // Converts 1 ether to wei
+      amount: parseUnits(amount, 6),
       dstChainId: mekongChainId,
       xCalls: [], // Empty array for xCalls
     };
@@ -71,8 +77,6 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
     });
 
     const { r, s } = parseSignature(signature);
-
-    console.log({ r, s });
 
     const finalSignature = formatHex(
       parseHex(r.toString()) + parseHex(s.toString())

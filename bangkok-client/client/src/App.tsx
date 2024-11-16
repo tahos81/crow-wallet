@@ -6,15 +6,30 @@ import { client } from "./config";
 
 import { useReadContract } from "wagmi";
 import { DEFAULT_ERC20 } from "./contracts";
-import { formatUnits } from "viem";
+import { createPublicClient, defineChain, formatUnits, http } from "viem";
 import SendIcon from "./assets/send.png";
 import ReceiveIcon from "./assets/receive.png";
 import DepositIcon from "./assets/deposit.png";
 import USDCIcon from "./assets/usdc.png";
 import OptimisimIcon from "./assets/op.png";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { mergeClasses } from "./utils/mergeClasses";
 import { SettlerOpen } from "./components/SettlerOpen";
+
+export const mekong = defineChain({
+  id: 7078815900,
+  name: "Mekong",
+  nativeCurrency: {
+    decimals: 18,
+    name: "Ether",
+    symbol: "ETH",
+  },
+  rpcUrls: {
+    default: {
+      http: ["https://rpc.mekong.ethpandaops.io"],
+    },
+  },
+});
 
 export function App() {
   const { data: account } = Account.useQuery();
@@ -63,6 +78,7 @@ export function Home() {
   const [positionState, setPositionState] = useState<"deposit" | "withdraw">(
     "deposit"
   );
+  const [amount, setAmount] = useState<string>("0");
 
   const { data: balance } = useReadContract({
     ...DEFAULT_ERC20,
@@ -139,19 +155,58 @@ export function Home() {
             </div>
           </div>
         </div>
-        <div className="mt-8 w-full space-y-4">
-          <span>APY: 11.7%</span>
-          <div className="flex justify-between items-center w-full">
-            <input
-              type="text"
-              placeholder="0.00"
-              className="h-[48px] w-full border-1 bg-transparent px-4 rounded-lg border-white bg-"
-            />
+        {positionState === "deposit" ? (
+          <div className="mt-8 w-full space-y-4">
+            <span>APY: 11.7%</span>
+            <div className="flex justify-between items-center w-full">
+              <input
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                }}
+                type="text"
+                placeholder="0.00"
+                className="h-[48px] w-full border-1 bg-transparent px-4 rounded-lg border-white bg-"
+              />
+            </div>
+            <SettlerOpen account={account} amount={amount} />
           </div>
-        </div>
-
-        <SettlerOpen account={account} />
+        ) : (
+          <MekongBalance />
+        )}
       </div>
     </MainWrapper>
   );
 }
+
+const MekongBalance = () => {
+  const { data: account } = Account.useQuery();
+  const [state, setState] = useState("0");
+
+  const fetchBalance = async () => {
+    const publicClient = createPublicClient({
+      transport: http(),
+      chain: mekong,
+    });
+
+    const balance = await publicClient.readContract({
+      ...DEFAULT_ERC20,
+      functionName: "balanceOf",
+      args: [account!.address],
+    });
+
+    if (balance) {
+      setState(formatUnits(balance, 6));
+    }
+  };
+
+  useEffect(() => {
+    fetchBalance();
+  }, []);
+
+  return (
+    <div className="mt-8 w-full space-y-4">
+      <span>Balance: {state} USDC</span>
+    </div>
+  );
+};
