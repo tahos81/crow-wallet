@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "./src",
+  "projects": {
+    "producer": {
+      "type": "application",
+      "root": "./",
+      "sourceRoot": "./src",
+      "entryFile": "./apps/producer/main"
+    },
+    "consumer": {
+      "type": "application",
+      "root": "./",
+      "sourceRoot": "./src",
+      "entryFile": "./apps/consumer/main"
+    },
+    "websocket": {
+      "type": "application",
+      "root": "./",
+      "sourceRoot": "./src",
+      "entryFile": "./apps/websocket/main"
+    }
+  }
+}
