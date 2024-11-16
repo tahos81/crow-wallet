@@ -3,8 +3,8 @@ import { CONFIG } from 'src/config';
 import { ADDRESSES, ABIS } from 'src/constants';
 
 export const CHAIN_ID = {
-  MEKONG: 324,
-  ALPHANET: 1101,
+  MEKONG: 137,
+  ALPHANET: 11155111,
 };
 
 export const RPC_URLS = {
