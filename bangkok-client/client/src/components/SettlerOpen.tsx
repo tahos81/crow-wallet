@@ -16,9 +16,11 @@ import { PrimaryButton } from "./Button";
 export function SettlerOpen({
   account,
   amount,
+  setAmount,
 }: {
   account: Account.Account;
   amount: string;
+  setAmount: (amount: string) => void;
 }) {
   const {
     data: hash,
@@ -145,6 +147,7 @@ export function SettlerOpen({
           hash,
         })
       );
+      setAmount("");
     } catch (e) {
       console.log(e);
     }
@@ -153,7 +156,7 @@ export function SettlerOpen({
   return (
     <div className="w-full">
       <PrimaryButton
-        disabled={isPending || isSuccess}
+        disabled={isPending}
         onClick={handleSettlerOpen}
         className="flex w-full items-center justify-center mt-4"
       >
@@ -161,13 +164,13 @@ export function SettlerOpen({
       </PrimaryButton>
       {error && <p>{(error as BaseError).shortMessage ?? error.message}</p>}
       {isSuccess && (
-        <p>
+        <p className="ml-auto text-center mr-auto mt-4">
           <a
             href={`${client.chain.blockExplorers.default.url}/tx/${hash}`}
             target="_blank"
             rel="noreferrer"
           >
-            Explorer
+            See on Explorer
           </a>
         </p>
       )}

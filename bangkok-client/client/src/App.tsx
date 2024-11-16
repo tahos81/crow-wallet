@@ -3,6 +3,7 @@ import "./index.css";
 import { MainWrapper } from "./components/MainWrapper";
 import { PrimaryButton, SecondaryButton } from "./components/Button";
 import { client } from "./config";
+import Logo from "./assets/logo.png";
 
 import { useReadContract } from "wagmi";
 import { DEFAULT_ERC20 } from "./contracts";
@@ -52,6 +53,10 @@ export function AuthView() {
 
   return (
     <MainWrapper>
+      <div className="w-56 h-56 m-auto">
+        <img src={Logo} />
+      </div>
+
       <div className="mt-auto mb-10 space-y-3 flex flex-col">
         <PrimaryButton
           onClick={() => {
@@ -78,7 +83,7 @@ export function Home() {
   const [positionState, setPositionState] = useState<"deposit" | "withdraw">(
     "deposit"
   );
-  const [amount, setAmount] = useState<string>("0");
+  const [amount, setAmount] = useState<string>("");
 
   const { data: balance } = useReadContract({
     ...DEFAULT_ERC20,
@@ -94,11 +99,11 @@ export function Home() {
   }
 
   const boxClasses =
-    "bg-[rgba(0,0,0,0.30)] rounded-lg justify-center items-center flex flex-col p-4 pt-8 pb-8 border-1 border-white/50";
+    "bg-[rgba(0,0,0,0.30)] rounded-2xl justify-center items-center flex flex-col p-4 pt-8 pb-8 border-1 border-white/80";
   const activeTab = "bg-[rgba(80,5,229,0.8)]";
 
   return (
-    <MainWrapper>
+    <MainWrapper blur={true}>
       <div className={`${boxClasses} mt-8`}>
         <div>
           {typeof balance === "bigint" && (
@@ -169,7 +174,11 @@ export function Home() {
                 className="h-[48px] w-full border-1 bg-transparent px-4 rounded-lg border-white bg-"
               />
             </div>
-            <SettlerOpen account={account} amount={amount} />
+            <SettlerOpen
+              account={account}
+              amount={amount}
+              setAmount={setAmount}
+            />
           </div>
         ) : (
           <MekongBalance />
