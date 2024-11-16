@@ -92,7 +92,7 @@ export function Home() {
           )}
         </div>
         <div
-          className="text-center whitespace-pre-wrap max-w-[200px]"
+          className="text-center whitespace-pre-wrap max-w-[90%]"
           style={{ overflowWrap: "anywhere" }}
         >
           {account.address}
