@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   CHAIN_ID,
+  getAccountContract,
   getERC20Contract,
   getRpcProvider,
   getSettlementContract,
@@ -46,14 +47,11 @@ export class ListenerService {
     // }
 
     // todo: decode order to resolvedCCOrder
-    const settlementContract = getSettlementContract(CHAIN_ID.ALPHANET);
+    const originSettlementContract = getSettlementContract(CHAIN_ID.ALPHANET);
 
-    const resolvedOrder = await settlementContract.resolve(order);
+    const resolvedOrder = await originSettlementContract.resolve(order);
 
-    const fillerAddress: string = abiCoder.decode(
-      ['address'],
-      resolvedOrder[0],
-    )[0];
+    const fillerAddress: string = bytes32ToAddress(resolvedOrder[0]);
     const originChainId: bigint = resolvedOrder[1];
     const openDeadline: bigint = resolvedOrder[2];
     const fillDeadline: bigint = resolvedOrder[3];
@@ -61,59 +59,82 @@ export class ListenerService {
     // todo: support multiple maxSpent
     const maxSpentArray = resolvedOrder[5][0];
     const maxSpent: OutputDto = {
-      token: abiCoder.decode(['address'], maxSpentArray[0])[0],
+      token: bytes32ToAddress(maxSpentArray[0]),
       amount: maxSpentArray[1],
-      recipient: abiCoder.decode(['address'], maxSpentArray[2])[0],
+      recipient: bytes32ToAddress(maxSpentArray[2]),
       chainId: maxSpentArray[3],
     };
     // todo: support multiple minReceived
     const minReceivedArray = resolvedOrder[6][0];
     const minReceived: OutputDto = {
-      token: abiCoder.decode(['address'], minReceivedArray[0])[0],
+      token: bytes32ToAddress(minReceivedArray[0]),
       amount: minReceivedArray[1],
-      recipient: abiCoder.decode(['address'], minReceivedArray[2])[0],
+      recipient: bytes32ToAddress(minReceivedArray[2]),
       chainId: minReceivedArray[3],
     };
     const fillInstructionsArray = resolvedOrder[7][0];
+
+    const abi = [
+      'tuple(tuple(address token, uint256 amount, uint32 dstChainId, tuple(address target, bytes callData, uint256 value)[] xCalls) orderData, bytes signature)',
+    ];
+
     const fillInstruction: FillInstructionDto = {
       destinationChainId: fillInstructionsArray[0],
-      destinationSettler: abiCoder.decode(['address'], fillInstructionsArray[1])[0],
+      destinationSettler: bytes32ToAddress(fillInstructionsArray[1]),
       originData: fillInstructionsArray[2], // crow order and signature
     };
+    const [crowOrderDataWithSig] = abiCoder.decode(
+      abi,
+      fillInstructionsArray[2],
+    );
+    const [crowOrderData, signatureOfCrowOrder] = crowOrderDataWithSig;
 
-    const { amount, token, chainId } = resolvedOrder.maxSpent[0];
+    console.log('all datas: ', {
+      fillerAddress,
+      originChainId,
+      openDeadline,
+      fillDeadline,
+      orderId,
+      maxSpent,
+      minReceived,
+      fillInstruction,
+      crowOrderDataWithSig,
+      crowOrderData,
+      signatureOfCrowOrder,
+    });
 
-    const tokenContract = getERC20Contract(token, chainId);
+    const { amount, token, chainId } = maxSpent;
+
+    const tokenContract = getERC20Contract(token, Number(chainId));
 
     const allowance: bigint = await tokenContract.allowance(
       ADDRESSES.ACCOUNT,
       ADDRESSES.DESTINATION_SETTLEMENT,
     );
 
-    // if (allowance < amount) {
-    //   console.log('Approving token...');
-    //   const approval = await tokenContract.approve(
-    //     ADDRESSES.DESTINATION_SETTLEMENT,
-    //     ethers.MaxUint256,
-    //   );
+    if (allowance < amount) {
+      console.log('Approving token...');
+      const approval = await tokenContract.approve(
+        ADDRESSES.DESTINATION_SETTLEMENT,
+        ethers.MaxUint256,
+      );
 
-    //   await approval.wait();
-    //   console.log('Approved!');
-    // }
+      await approval.wait();
+      console.log('Approved!');
+    }
 
-    // const signer = getSigner();
-    // const signerAddress = signer.getAddress();
+    const accountContract = getAccountContract(
+      Number(fillInstruction.destinationChainId),
+    );
 
-    // const settlementContract = getSettlementContract();
+    const fill = await accountContract.fill(
+      orderId,
+      crowOrderData,
+      fillerAddress,
+    );
 
-    // const fill = await settlementContract.fill(
-    //   orderId,
-    //   order.orderData,
-    //   signerAddress,
-    // );
-
-    // const receipt = await fill.wait();
-    // console.log('Order filled!', receipt.transactionHash);
+    const receipt = await fill.wait();
+    console.log('Order filled!', receipt.transactionHash);
   }
 
   public async newGaslessOrder(newOrder: newGaslessOrderDto): Promise<void> {
@@ -183,9 +204,13 @@ export class ListenerService {
       orderDataType:
         '0x14a1ec3370924385dde81afb955e8b7b4622456fd879688f69853490fdbfb263',
       orderData:
-        '0x000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000114b242d931b47d5cdcee7af065856f70ee278c400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000114b242d931b47d5cdcee7af065856f70ee278c400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a307831323334353637380000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000029876000000000000000000000000000000000000000000000000000000000000',
+        '0x000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000114b242d931b47d5cdcee7af065856f70ee278c400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000020000000000000000000000000114b242d931b47d5cdcee7af065856f70ee278c400000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a307831323334353637380000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000004a199675cd68c88385085b5d7de983f388987654',
     };
 
     await this.newOnchainOrder(order);
   }
 }
+
+const bytes32ToAddress = (bytes32: string): string => {
+  return '0x'.concat(bytes32.slice(-40));
+};
