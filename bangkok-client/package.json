@@ -1,0 +1,14 @@
+{
+  "name": "exp-0001",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter example-webauthn dev",
+    "check": "biome check example/ --write",
+    "check:types": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "1.9.2",
+    "typescript": "^5.5.3"
+  }
+}

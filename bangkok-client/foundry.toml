@@ -1,0 +1,14 @@
+[profile.default]
+src = "contracts/src"
+out = "contracts/out"
+test = "contracts/test"
+libs = ["contracts/lib"]
+remappings = [
+    "forge-std/=contracts/lib/forge-std/src",
+    "solady/=contracts/lib/solady/src",
+]
+via_ir = true
+evm_version = "prague"
+alphanet = true
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
