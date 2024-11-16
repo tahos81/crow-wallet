@@ -142,7 +142,7 @@ export class ListenerService {
     );
 
     const receipt = await fill.wait();
-    console.log('Order filled!', receipt.transactionHash);
+    console.log('Order filled!', fill.transactionHash);
   }
 
   public async newGaslessOrder(newOrder: newGaslessOrderDto): Promise<void> {
