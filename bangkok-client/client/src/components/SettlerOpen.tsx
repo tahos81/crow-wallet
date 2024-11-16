@@ -11,6 +11,7 @@ import { client } from "../config";
 import { DEFAULT_ERC20, SETTLER } from "../contracts";
 import { Account } from "../modules/Account";
 import { parseSignature, sign } from "webauthn-p256";
+import { PrimaryButton } from "./Button";
 
 export function SettlerOpen({ account }: { account: Account.Account }) {
   const {
@@ -30,17 +31,17 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
 
   const handleSettlerOpen = async () => {
     const CROW_ORDER_DATA_TYPE_HASH =
-      "0x14a1ec3370924385dde81afb955e8b7b4622456fd879688f69853490fdbfb263"; // Replace with your actual type hash
-    const TOKEN_ADDRESS = "0xc6Ab1437507B4156b4DbFbe061b369f0973Be8F4"; // Your token address
+      "0x6d911b1876ad24ca46939cd79dc8c65d06f956b2fa247efb05bde6ce4d7cb983"; // Replace with your actual type hash
+    const TOKEN_ADDRESS = DEFAULT_ERC20.address; // Your token address
+
+    const mekongChainId = 7078815900n;
 
     const orderData = {
       token: TOKEN_ADDRESS as `0x${string}`,
       amount: parseUnits("1", 6), // Converts 1 ether to wei
-      dstChainId: 911867n,
+      dstChainId: mekongChainId,
       xCalls: [], // Empty array for xCalls
     };
-
-    const mekongChainId = BigInt(7078815900);
 
     const orderDataHash = keccak256(
       encodeAbiParameters(
@@ -107,49 +108,53 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
       orderData: encodedOrderData,
     };
 
-    execute({
-      account,
-      calls: [
-        {
-          to: DEFAULT_ERC20.address,
-          data: encodeFunctionData({
-            abi: DEFAULT_ERC20.abi,
-            functionName: "approve",
-            args: [
-              SETTLER.address as `0x${string}`,
-              parseUnits("10000000000", 6),
-            ],
-          }),
-        },
-        {
-          to: SETTLER.address as `0x${string}`,
-          data: encodeFunctionData({
-            abi: SETTLER.abi,
-            functionName: "open",
-            args: [order],
-          }),
-        },
-      ],
-    });
+    try {
+      execute({
+        account,
+        calls: [
+          {
+            to: DEFAULT_ERC20.address,
+            data: encodeFunctionData({
+              abi: DEFAULT_ERC20.abi,
+              functionName: "approve",
+              args: [
+                SETTLER.address as `0x${string}`,
+                parseUnits("10000000000", 6),
+              ],
+            }),
+          },
+          {
+            to: SETTLER.address as `0x${string}`,
+            data: encodeFunctionData({
+              abi: SETTLER.abi,
+              functionName: "open",
+              args: [order],
+            }),
+          },
+        ],
+      });
 
-    console.log(
-      order,
-      JSON.stringify({
-        signature: finalSignature,
-        hash,
-      })
-    );
+      console.log(
+        order,
+        JSON.stringify({
+          signature: finalSignature,
+          hash,
+        })
+      );
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
-    <div>
-      <button
+    <div className="w-full">
+      <PrimaryButton
         disabled={isPending || isSuccess}
         onClick={handleSettlerOpen}
-        type="button"
+        className="flex w-full items-center justify-center mt-4"
       >
-        {isPending ? "Opening..." : "Open Settler"}
-      </button>
+        {isPending ? "Depositing..." : "Deposit"}
+      </PrimaryButton>
       {error && <p>{(error as BaseError).shortMessage ?? error.message}</p>}
       {isSuccess && (
         <p>
