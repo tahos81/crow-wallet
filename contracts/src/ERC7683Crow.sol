@@ -13,7 +13,7 @@ struct XCall {
 struct CrowOrderData {
     address token;
     uint256 amount;
-    uint32 dstChainId;
+    uint64 dstChainId;
     XCall[] xCalls;
 }
 
@@ -21,7 +21,7 @@ bytes constant XCALL_DATA_TYPE = abi.encodePacked("XCall(address target,bytes ca
 bytes32 constant XCALL_DATA_TYPE_HASH = keccak256(XCALL_DATA_TYPE);
 
 bytes constant CROW_ORDER_DATA_TYPE = abi.encodePacked(
-    "CrowOrderData(address token,uint256 amount,uint32 dstChainId,XCall[] xCalls)",
+    "CrowOrderData(address token,uint256 amount,uint64 dstChainId,XCall[] xCalls)",
     "Call(address target,bytes callData,uint256 value)"
 );
 bytes32 constant CROW_ORDER_DATA_TYPE_HASH = keccak256(CROW_ORDER_DATA_TYPE);
