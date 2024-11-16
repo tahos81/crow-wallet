@@ -10,7 +10,7 @@ import {
     FillInstruction
 } from "./Order.sol";
 import {CrowOrderData, CROW_ORDER_DATA_TYPE_HASH} from "./ERC7683Crow.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IPermit2} from "./interface/IPermit2.sol";
 import {ERC7683Permit2Lib} from "./ERC7683Crow.sol";
 import {CrowOrderWithSig} from "./CrossDelegation.sol";
