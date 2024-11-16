@@ -13,6 +13,7 @@ import {CrowOrderData, CROW_ORDER_DATA_TYPE_HASH} from "./ERC7683Crow.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IPermit2} from "./interface/IPermit2.sol";
 import {ERC7683Permit2Lib} from "./ERC7683Crow.sol";
+import {CrowOrderWithSig} from "./CrossDelegation.sol";
 
 contract Settler is IOriginSettler {
     using SafeERC20 for IERC20;
@@ -68,11 +69,12 @@ contract Settler is IOriginSettler {
     function _resolve(OnchainCrossChainOrder calldata order)
         internal
         view
-        returns (ResolvedCrossChainOrder memory resolvedOrder, CrowOrderData memory crowOrderData)
+        returns (ResolvedCrossChainOrder memory, CrowOrderData memory)
     {
         require(order.orderDataType == CROW_ORDER_DATA_TYPE_HASH, "invalid order data type");
 
-        crowOrderData = abi.decode(order.orderData, (CrowOrderData));
+        (CrowOrderData memory crowOrderData, bytes memory signature) =
+            abi.decode(order.orderData, (CrowOrderData, bytes));
 
         Output[] memory maxSpent = new Output[](1);
         maxSpent[0] = Output({
@@ -94,14 +96,16 @@ contract Settler is IOriginSettler {
             chainId: block.chainid
         });
 
+        CrowOrderWithSig memory crowOrderWithSig = CrowOrderWithSig({orderData: crowOrderData, signature: signature});
+
         FillInstruction[] memory fillInstructions = new FillInstruction[](1);
         fillInstructions[0] = FillInstruction({
             destinationChainId: crowOrderData.dstChainId,
             destinationSettler: _toBytes32(msg.sender),
-            originData: abi.encode(crowOrderData)
+            originData: abi.encode(crowOrderWithSig)
         });
 
-        resolvedOrder = ResolvedCrossChainOrder({
+        ResolvedCrossChainOrder memory resolvedOrder = ResolvedCrossChainOrder({
             user: msg.sender,
             originChainId: block.chainid,
             openDeadline: type(uint32).max,
@@ -111,18 +115,21 @@ contract Settler is IOriginSettler {
             fillInstructions: fillInstructions,
             orderId: keccak256(abi.encode(crowOrderData, crowOrderData.dstChainId))
         });
+
+        return (resolvedOrder, crowOrderData);
     }
 
     function _resolveFor(GaslessCrossChainOrder calldata order, bytes calldata /* originFillerData */ )
         internal
         view
-        returns (ResolvedCrossChainOrder memory resolvedOrder, CrowOrderData memory crowOrderData)
+        returns (ResolvedCrossChainOrder memory, CrowOrderData memory)
     {
         require(order.originSettler == address(this), "invalid settler");
         require(order.originChainId == block.chainid, "invalid chainId");
         require(order.orderDataType == CROW_ORDER_DATA_TYPE_HASH, "invalid orderDataType");
 
-        crowOrderData = abi.decode(order.orderData, (CrowOrderData));
+        (CrowOrderData memory crowOrderData, bytes memory signature) =
+            abi.decode(order.orderData, (CrowOrderData, bytes));
 
         Output[] memory maxSpent = new Output[](1);
         maxSpent[0] = Output({
@@ -140,14 +147,16 @@ contract Settler is IOriginSettler {
             chainId: block.chainid
         });
 
+        CrowOrderWithSig memory crowOrderWithSig = CrowOrderWithSig({orderData: crowOrderData, signature: signature});
+
         FillInstruction[] memory fillInstructions = new FillInstruction[](1);
         fillInstructions[0] = FillInstruction({
             destinationChainId: crowOrderData.dstChainId,
             destinationSettler: _toBytes32(msg.sender),
-            originData: abi.encode(crowOrderData)
+            originData: abi.encode(crowOrderWithSig)
         });
 
-        resolvedOrder = ResolvedCrossChainOrder({
+        ResolvedCrossChainOrder memory resolvedOrder = ResolvedCrossChainOrder({
             user: order.user,
             originChainId: order.originChainId,
             openDeadline: order.openDeadline,
@@ -157,6 +166,8 @@ contract Settler is IOriginSettler {
             fillInstructions: fillInstructions,
             orderId: keccak256(abi.encode(crowOrderData, crowOrderData.dstChainId))
         });
+
+        return (resolvedOrder, crowOrderData);
     }
 
     function _processPermit2Order(
