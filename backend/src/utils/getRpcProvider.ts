@@ -41,11 +41,12 @@ export const getSigner = (chainId = CHAIN_ID.MEKONG): ethers.Signer => {
 };
 
 export const getAccountContract = (
+  address = ADDRESSES.ACCOUNT,
   chainId = CHAIN_ID.MEKONG,
 ): ethers.Contract => {
   const wallet = getSigner(chainId);
 
-  return new ethers.Contract(ADDRESSES.ACCOUNT, ABIS.ACCOUNT, wallet);
+  return new ethers.Contract(address, ABIS.ACCOUNT, wallet);
 };
 
 export const getERC20Contract = (

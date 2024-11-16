@@ -6,12 +6,12 @@ export class PublisherController {
   constructor(private publisherService: PublisherService) {}
 
   @Get('get_orders')
-  async pixels(): Promise<void> {
+  async orders(): Promise<void> {
     return await this.publisherService.getOrder();
   }
 
   @Post('execute_order')
-  async placePixel(): Promise<unknown> {
+  async executeOrder(): Promise<unknown> {
     return await this.publisherService.executeOrder();
   }
 }

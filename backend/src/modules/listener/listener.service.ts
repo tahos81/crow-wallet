@@ -18,6 +18,7 @@ import {
   newGaslessOrderDto,
   newOnchainOrderDto,
   OutputDto,
+  ResolvedCrossChainOrderDTO,
 } from 'src/modules/listener/dto/listener.dto';
 import { ADDRESSES } from 'src/constants';
 
@@ -37,9 +38,9 @@ export class ListenerService {
   }
 
   public async newOnchainOrder(newOrder: newOnchainOrderDto): Promise<void> {
-    const { signature, transactionHash, ...order } = newOrder;
+    const { transactionHash, ...resolvedOrder } = newOrder;
 
-    console.log('New order: ', order);
+    console.log('New order: ', resolvedOrder);
 
     // const isValid = await this.validateOnchainOrder(order);
 
@@ -47,47 +48,46 @@ export class ListenerService {
     //   throw new Error('Invalid onchain order');
     // }
 
-    // todo: decode order to resolvedCCOrder
-    const originSettlementContract = getSettlementContract(CHAIN_ID.ODYSSEY);
-
-    const resolvedOrder = getResolvedOrder();
+    // const resolvedOrder = getResolvedOrder();
     // await originSettlementContract.resolve(order);
 
-    const accountAddress: string = bytes32ToAddress(resolvedOrder[0]);
-    const originChainId: bigint = resolvedOrder[1];
-    const openDeadline: bigint = resolvedOrder[2];
-    const fillDeadline: bigint = resolvedOrder[3];
-    const orderId: string = resolvedOrder[4];
+    const accountAddress: string = resolvedOrder.user;
+    const originChainId: bigint = BigInt(resolvedOrder.originChainId);
+    const openDeadline: bigint = BigInt(resolvedOrder.openDeadline);
+    const fillDeadline: bigint = BigInt(resolvedOrder.fillDeadline);
+    const orderId: string = resolvedOrder.orderId;
     // todo: support multiple maxSpent
-    const maxSpentArray = resolvedOrder[5][0];
+    const maxSpentArray = resolvedOrder.maxSpent[0];
     const maxSpent: OutputDto = {
-      token: bytes32ToAddress(maxSpentArray[0]),
-      amount: maxSpentArray[1],
-      recipient: bytes32ToAddress(maxSpentArray[2]),
-      chainId: maxSpentArray[3],
+      token: bytes32ToAddress(maxSpentArray.token),
+      amount: BigInt(maxSpentArray.amount),
+      recipient: bytes32ToAddress(maxSpentArray.recipient),
+      chainId: BigInt(maxSpentArray.chainId),
     };
     // todo: support multiple minReceived
-    const minReceivedArray = resolvedOrder[6][0];
+    const minReceivedArray = resolvedOrder.minReceived[0];
     const minReceived: OutputDto = {
-      token: bytes32ToAddress(minReceivedArray[0]),
-      amount: minReceivedArray[1],
-      recipient: bytes32ToAddress(minReceivedArray[2]),
-      chainId: minReceivedArray[3],
+      token: bytes32ToAddress(minReceivedArray.token),
+      amount: BigInt(minReceivedArray.amount),
+      recipient: bytes32ToAddress(minReceivedArray.recipient),
+      chainId: BigInt(minReceivedArray.chainId),
     };
-    const fillInstructionsArray = resolvedOrder[7][0];
+    const fillInstructionsArray = resolvedOrder.fillInstructions[0];
 
     const abi = [
       'tuple(tuple(address token, uint256 amount, uint32 dstChainId, tuple(address target, bytes callData, uint256 value)[] xCalls) orderData, bytes signature)',
     ];
 
     const fillInstruction: FillInstructionDto = {
-      destinationChainId: fillInstructionsArray[0],
-      destinationSettler: bytes32ToAddress(fillInstructionsArray[1]),
-      originData: fillInstructionsArray[2], // crow order and signature
+      destinationChainId: fillInstructionsArray.destinationChainId,
+      destinationSettler: bytes32ToAddress(
+        fillInstructionsArray.destinationSettler,
+      ),
+      originData: fillInstructionsArray.originData, // crow order and signature
     };
     const [crowOrderDataWithSig] = abiCoder.decode(
       abi,
-      fillInstructionsArray[2],
+      fillInstructionsArray.originData,
     );
     const [crowOrderData, signatureOfCrowOrder] = crowOrderDataWithSig;
 
@@ -130,6 +130,7 @@ export class ListenerService {
     }
 
     const accountContract = getAccountContract(
+      accountAddress,
       Number(fillInstruction.destinationChainId),
     );
 
@@ -137,11 +138,11 @@ export class ListenerService {
 
     const fill = await accountContract.fill(
       orderId,
-      fillInstructionsArray[2],
+      fillInstructionsArray.originData,
       fillerAddress,
     );
 
-    const receipt = await fill.wait();
+    await fill.wait();
     console.log('Order filled!', fill.hash);
   }
 
@@ -247,5 +248,8 @@ const getResolvedOrder = () => {
 };
 
 const bytes32ToAddress = (bytes32: string): string => {
-  return '0x'.concat(bytes32.slice(-40));
+  if (bytes32.length === 66) {
+    return '0x'.concat(bytes32.slice(-40));
+  }
+  return bytes32;
 };

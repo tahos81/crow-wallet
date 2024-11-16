@@ -4,6 +4,7 @@ import {
   encodeFunctionData,
   keccak256,
   parseUnits,
+  getContract,
 } from "viem";
 
 import { useWaitForTransactionReceipt } from "wagmi";
@@ -12,11 +13,13 @@ import { DEFAULT_ERC20, SETTLER } from "../contracts";
 import { Account } from "../modules/Account";
 import { parseSignature, sign } from "webauthn-p256";
 import { PrimaryButton } from "./Button";
+import axios from "axios";
 
 export function SettlerOpen({ account }: { account: Account.Account }) {
   const {
     data: hash,
     mutate: execute,
+    mutateAsync: executeAsync,
     error,
     ...executeQuery
   } = Account.useExecute({
@@ -109,7 +112,7 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
     };
 
     try {
-      execute({
+      await executeAsync({
         account,
         calls: [
           {
@@ -141,6 +144,48 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
           hash,
         })
       );
+
+      const settlementContract = getContract({
+        address: SETTLER.address as `0x${string}`,
+        abi: SETTLER.abi,
+        client,
+      });
+
+      const resolvedOrder: any = await settlementContract.read.resolve([order]);
+      console.log("Resolved order: ", resolvedOrder);
+
+      const maxSpent = resolvedOrder?.maxSpent[0];
+      const minReceived = resolvedOrder?.minReceived[0];
+      const fillInstructions = resolvedOrder?.fillInstructions[0];
+
+      await axios.post("http://localhost:8000/new_onchain_order", {
+        user: account.address,
+        originChainId: Number(resolvedOrder?.originChainId),
+        openDeadline: Number(resolvedOrder?.openDeadline),
+        fillDeadline: Number(resolvedOrder?.fillDeadline),
+        orderId: resolvedOrder?.orderId,
+        maxSpent: [
+          {
+            ...maxSpent,
+            amount: Number(maxSpent.amount),
+            chainId: Number(maxSpent.chainId),
+          },
+        ],
+        minReceived: [
+          {
+            ...minReceived,
+            amount: Number(minReceived.amount),
+            chainId: Number(minReceived.chainId),
+          },
+        ],
+        fillInstructions: [
+          {
+            ...fillInstructions,
+            destinationChainId: Number(fillInstructions.destinationChainId),
+          },
+        ],
+        transactionHash: hash,
+      });
     } catch (e) {
       console.log(e);
     }
@@ -149,7 +194,7 @@ export function SettlerOpen({ account }: { account: Account.Account }) {
   return (
     <div className="w-full">
       <PrimaryButton
-        disabled={isPending || isSuccess}
+        disabled={isPending}
         onClick={handleSettlerOpen}
         className="flex w-full items-center justify-center mt-4"
       >
