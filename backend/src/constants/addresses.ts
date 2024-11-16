@@ -1,0 +1,3 @@
+export const ADDRESSES = {
+  ACCOUNT: '0x8c6aAfa17e55A4267514106D60E563De39efD9B6',
+};
