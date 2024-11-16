@@ -1,31 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.26;
 
-/// @notice Tokens that must be receive for a valid order fulfillment
-struct Output {
-    /// @dev The address of the ERC20 token on the destination chain
-    /// @dev address(0) used as a sentinel for the native token
-    bytes32 token;
-    /// @dev The amount of the token to be sent
-    uint256 amount;
-    /// @dev The address to receive the output tokens
-    bytes32 recipient;
-    /// @dev The destination chain for this output
-    uint256 chainId;
-}
-
-/// @title FillInstruction type
-/// @notice Instructions to parameterize each leg of the fill
-/// @dev Provides all the origin-generated information required to produce a valid fill leg
-struct FillInstruction {
-    /// @dev The contract address that the order is meant to be settled by
-    uint64 destinationChainId;
-    /// @dev The contract address that the order is meant to be filled on
-    bytes32 destinationSettler;
-    /// @dev The data generated on the origin chain needed by the destinationSettler to process the fill
-    bytes originData;
-}
-
 /// @title GaslessCrossChainOrder CrossChainOrder type
 /// @notice Standard order struct to be signed by users, disseminated to fillers, and submitted to origin settler contracts
 struct GaslessCrossChainOrder {
@@ -89,4 +64,29 @@ struct ResolvedCrossChainOrder {
     /// @dev Each instruction in this array is parameterizes a single leg of the fill. This provides the filler with the information
     ///      necessary to perform the fill on the destination(s).
     FillInstruction[] fillInstructions;
+}
+
+/// @notice Tokens that must be receive for a valid order fulfillment
+struct Output {
+    /// @dev The address of the ERC20 token on the destination chain
+    /// @dev address(0) used as a sentinel for the native token
+    bytes32 token;
+    /// @dev The amount of the token to be sent
+    uint256 amount;
+    /// @dev The address to receive the output tokens
+    bytes32 recipient;
+    /// @dev The destination chain for this output
+    uint256 chainId;
+}
+
+/// @title FillInstruction type
+/// @notice Instructions to parameterize each leg of the fill
+/// @dev Provides all the origin-generated information required to produce a valid fill leg
+struct FillInstruction {
+    /// @dev The contract address that the order is meant to be settled by
+    uint64 destinationChainId;
+    /// @dev The contract address that the order is meant to be filled on
+    bytes32 destinationSettler;
+    /// @dev The data generated on the origin chain needed by the destinationSettler to process the fill
+    bytes originData;
 }
