@@ -21,7 +21,8 @@ export const CONFIG: Config = {
   PORT: Number(process.env.APP_PORT),
   RESPONSE_LIMIT: Number(process.env.RESPONSE_LIMIT),
   BUCKET_URL: process.env.BUCKET_URL,
-  NETWORK_RPC_URL: process.env.NETWORK_RPC_URL,
+  NETWORK_RPC_URL_A: process.env.NETWORK_RPC_URL_A,
+  NETWORK_RPC_URL_B: process.env.NETWORK_RPC_URL_B,
   NETWORK_WS_URL: process.env.NETWORK_WS_URL,
   RABBIT_SERVICE_NAME: process.env.RABBIT_SERVICE_NAME,
   RABBIT_URL: process.env.RABBIT_URL,
@@ -36,7 +37,8 @@ type Config = {
   PORT: number;
   RESPONSE_LIMIT: number;
   BUCKET_URL: string;
-  NETWORK_RPC_URL: string;
+  NETWORK_RPC_URL_A: string;
+  NETWORK_RPC_URL_B: string;
   NETWORK_WS_URL: string;
   RABBIT_SERVICE_NAME: string;
   RABBIT_URL: string;
