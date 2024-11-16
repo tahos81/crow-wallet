@@ -134,7 +134,11 @@ export class ListenerService {
       Number(fillInstruction.destinationChainId),
     );
 
-    console.log({ orderId, crowOrderDataWithSig, fillerAddress });
+    console.log({
+      orderId,
+      originData: fillInstructionsArray.originData,
+      fillerAddress,
+    });
 
     const fill = await accountContract.fill(
       orderId,

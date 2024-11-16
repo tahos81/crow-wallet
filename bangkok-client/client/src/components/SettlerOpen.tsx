@@ -9,7 +9,7 @@ import {
 
 import { useWaitForTransactionReceipt } from "wagmi";
 import { client } from "../config";
-import { DEFAULT_ERC20, SETTLER } from "../contracts";
+import { DEFAULT_ERC20, INVEST_POOL, SETTLER } from "../contracts";
 import { Account } from "../modules/Account";
 import { parseSignature, sign } from "webauthn-p256";
 import { PrimaryButton } from "./Button";
@@ -47,11 +47,34 @@ export function SettlerOpen({
 
     const mekongChainId = 7078815900n;
 
+    const xCallApprove = {
+      target: DEFAULT_ERC20.address as `0x${string}`,
+      callData: encodeFunctionData({
+        abi: DEFAULT_ERC20.abi,
+        functionName: "approve",
+        args: [
+          INVEST_POOL.address as `0x${string}`,
+          parseUnits("10000000000", 6),
+        ],
+      }) as `0x${string}`,
+      value: 0n,
+    };
+
+    const xCallInvest = {
+      target: INVEST_POOL.address as `0x${string}`,
+      callData: encodeFunctionData({
+        abi: INVEST_POOL.abi,
+        functionName: "invest",
+        args: [TOKEN_ADDRESS as `0x${string}`, parseUnits(amount, 6)],
+      }) as `0x${string}`,
+      value: 0n,
+    };
+
     const orderData = {
       token: TOKEN_ADDRESS as `0x${string}`,
       amount: parseUnits(amount, 6),
       dstChainId: mekongChainId,
-      xCalls: [], // Empty array for xCalls
+      xCalls: [xCallApprove, xCallInvest] as const, // Empty array for xCalls
     };
 
     const orderDataHash = keccak256(
@@ -65,7 +88,11 @@ export function SettlerOpen({
               {
                 name: "xCalls",
                 type: "tuple[]",
-                components: [], // Add XCall components if needed
+                components: [
+                  { name: "target", type: "address" },
+                  { name: "callData", type: "bytes" },
+                  { name: "value", type: "uint256" },
+                ],
               },
             ],
             type: "tuple",
@@ -97,7 +124,11 @@ export function SettlerOpen({
             {
               name: "xCalls",
               type: "tuple[]",
-              components: [], // Add XCall components if needed
+              components: [
+                { name: "target", type: "address" },
+                { name: "callData", type: "bytes" },
+                { name: "value", type: "uint256" },
+              ],
             },
           ],
           type: "tuple",

@@ -6,7 +6,7 @@ import { client } from "./config";
 import Logo from "./assets/logo.png";
 
 import { useReadContract } from "wagmi";
-import { DEFAULT_ERC20 } from "./contracts";
+import { DEFAULT_ERC20, INVEST_POOL } from "./contracts";
 import { createPublicClient, defineChain, formatUnits, http } from "viem";
 import SendIcon from "./assets/send.png";
 import ReceiveIcon from "./assets/receive.png";
@@ -199,13 +199,15 @@ const MekongBalance = () => {
     });
 
     const balance = await publicClient.readContract({
-      ...DEFAULT_ERC20,
-      functionName: "balanceOf",
+      ...INVEST_POOL,
+      functionName: "balances",
       args: [account!.address],
     });
 
+    console.log("balacne: ", balance);
+
     if (balance) {
-      setState(formatUnits(balance, 6));
+      setState(formatUnits(balance as unknown as bigint, 6));
     }
   };
 

@@ -174,7 +174,7 @@ export const ExperimentDelegation = {
     { type: "error", name: "KeyExpired", inputs: [] },
     { type: "error", name: "KeyNotAuthorized", inputs: [] },
   ],
-  address: "0x6bbce6b04736f9db8d3dbE509b87Da3BC1435439",
+  address: "0x62f8846e2c342Db3bFeBaf520c13D05f2FD1f177",
 } as const;
 
 export const ExperimentERC20 = {
@@ -1575,6 +1575,78 @@ export const SETTLER = {
         },
       ],
       anonymous: false,
+    },
+    {
+      type: "error",
+      name: "SafeERC20FailedOperation",
+      inputs: [
+        {
+          name: "token",
+          type: "address",
+          internalType: "address",
+        },
+      ],
+    },
+  ],
+};
+
+export const INVEST_POOL = {
+  address: "0x2D6f315E3D9955cc56455E4e8eA43d839a3ABDe6" as `0x${string}`,
+  abi: [
+    {
+      type: "function",
+      name: "balances",
+      inputs: [
+        {
+          name: "",
+          type: "address",
+          internalType: "address",
+        },
+      ],
+      outputs: [
+        {
+          name: "",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
+      name: "invest",
+      inputs: [
+        {
+          name: "token",
+          type: "address",
+          internalType: "address",
+        },
+        {
+          name: "amount",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      outputs: [],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "function",
+      name: "withdraw",
+      inputs: [
+        {
+          name: "token",
+          type: "address",
+          internalType: "address",
+        },
+        {
+          name: "amount",
+          type: "uint256",
+          internalType: "uint256",
+        },
+      ],
+      outputs: [],
+      stateMutability: "nonpayable",
     },
     {
       type: "error",
