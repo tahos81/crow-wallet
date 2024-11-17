@@ -13,6 +13,7 @@ import ReceiveIcon from "./assets/receive.png";
 import DepositIcon from "./assets/deposit.png";
 import USDCIcon from "./assets/usdc.png";
 import OptimisimIcon from "./assets/op.png";
+import BaseIcon from "./assets/base.png";
 import { useEffect, useState } from "react";
 import { mergeClasses } from "./utils/mergeClasses";
 import { SettlerOpen } from "./components/SettlerOpen";
@@ -105,6 +106,9 @@ export function Home() {
   return (
     <MainWrapper blur={true}>
       <div className={`${boxClasses} mt-8`}>
+        <div className="flex space-x-2">
+          <img className="w-12 h-12" src={BaseIcon} />
+        </div>
         <div>
           {typeof balance === "bigint" && (
             <span className="text-[64px] font-light">
