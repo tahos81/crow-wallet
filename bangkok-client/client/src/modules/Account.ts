@@ -124,10 +124,10 @@ export namespace Account {
     // the contract.
     const signature = parseSignature(await account.sign({ hash: digest }));
 
-    // const mekongClient = createPublicClient({
-    //   chain: mekong,
-    //   transport: http(),
-    // });
+    const mekongClient = createPublicClient({
+      chain: mekong,
+      transport: http(),
+    });
 
     // Sign an EIP-7702 authorization to inject the ExperimentDelegation contract
     // onto the EOA.
@@ -137,11 +137,16 @@ export namespace Account {
       delegate: true,
     });
 
-    // const mekongAuthorization = await signAuthorization(mekongClient, {
-    //   account,
-    //   contractAddress: ExperimentDelegation.address,
-    //   delegate: true,
-    // });
+    const mekongAuthorization = await signAuthorization(mekongClient, {
+      account,
+      contractAddress: ExperimentDelegation.address,
+      delegate: true,
+    });
+
+    // Empty PK, never push actual private keys to github
+    const sequencer = privateKeyToAccount(
+      "0xa16e0cf57ccb0245ac483b4cac8d64e37b1042fc9281ca358804a050ddcd287"
+    );
 
     // Send an EIP-7702 contract write to authorize the WebAuthn key on the EOA.
     const hash = await writeContract(client, {
@@ -161,28 +166,28 @@ export namespace Account {
         },
       ],
       authorizationList: [authorization],
-      account: null, // defer to sequencer to fill
+      account: sequencer, // defer to sequencer to fill
     });
 
-    // await writeContract(mekongClient, {
-    //   abi: ExperimentDelegation.abi,
-    //   address: account.address,
-    //   functionName: "authorize",
-    //   args: [
-    //     {
-    //       x: publicKey.x,
-    //       y: publicKey.y,
-    //     },
-    //     expiry,
-    //     {
-    //       r: BigInt(signature.r),
-    //       s: BigInt(signature.s),
-    //       yParity: signature.yParity,
-    //     },
-    //   ],
-    //   authorizationList: [mekongAuthorization],
-    //   account, // defer to sequencer to fill
-    // });
+    await writeContract(mekongClient, {
+      abi: ExperimentDelegation.abi,
+      address: account.address,
+      functionName: "authorize",
+      args: [
+        {
+          x: publicKey.x,
+          y: publicKey.y,
+        },
+        expiry,
+        {
+          r: BigInt(signature.r),
+          s: BigInt(signature.s),
+          yParity: signature.yParity,
+        },
+      ],
+      authorizationList: [mekongAuthorization],
+      account: sequencer, // defer to sequencer to fill
+    });
 
     return hash;
   }
