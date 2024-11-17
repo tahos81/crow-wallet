@@ -145,7 +145,7 @@ export namespace Account {
 
     // Empty PK, never push actual private keys to github
     const sequencer = privateKeyToAccount(
-      "0xa16e0cf57ccb0245ac483b4cac8d64e37b1042fc9281ca358804a050ddcd287"
+      "0xa16e0cf57ccb0245ac483b4cac8d64e37b1042fc9281ca358804a050ddcd2872"
     );
 
     // Send an EIP-7702 contract write to authorize the WebAuthn key on the EOA.
@@ -166,7 +166,7 @@ export namespace Account {
         },
       ],
       authorizationList: [authorization],
-      account: sequencer, // defer to sequencer to fill
+      account: sequencer,
     });
 
     await writeContract(mekongClient, {
@@ -186,7 +186,7 @@ export namespace Account {
         },
       ],
       authorizationList: [mekongAuthorization],
-      account: sequencer, // defer to sequencer to fill
+      account: sequencer,
     });
 
     return hash;
